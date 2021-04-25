@@ -1,0 +1,50 @@
+# Build New VM
+data "vsphere_datacenter" "datacenter" {
+  name                  = "localhost"
+}
+
+
+data "vsphere_datastore" "datastore" {
+  name          = "datastore1"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+data "vsphere_resource_pool" "pool" {
+  name          = ""
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+data "vsphere_network" "networking" {
+  name          = "VM Network"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
+resource "vsphere_virtual_machine" "virtualmachine" {
+  count                      = "2"
+  name                       = "Terraform-${count.index}"
+  resource_pool_id           = data.vsphere_resource_pool.pool.id
+  datastore_id               = data.vsphere_datastore.datastore.id
+  force_power_off            =  true
+  shutdown_wait_timeout      =  1
+  num_cpus                   =  1
+  memory                     =  4096
+  wait_for_guest_net_timeout = "0"
+  guest_id                   = "centos7_64guest"
+  nested_hv_enabled          =  true
+
+  network_interface {
+    network_id   = data.vsphere_network.networking.id
+    adapter_type = "vmxnet3"
+  }
+
+  cdrom {
+    datastore_id = data.vsphere_datastore.datastore.id
+    path         = "iso/CentOS-7-x86_64-DVD-1908.iso"
+  }
+  disk {
+    size             =  50
+     label            = "first-disk.vmdk"
+    eagerly_scrub    = false
+    thin_provisioned = true
+  }
+}
