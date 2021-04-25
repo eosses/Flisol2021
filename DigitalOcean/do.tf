@@ -5,6 +5,10 @@ terraform {
 }
 }
 }
+
+#export DO_PAT="Valor do Token"  Será utilizado como expressão para preenchimento do Token.
+#O input da variável var.do_token será preenchido na execução do terraform apply -var "do_token=${DO_PAT}"
+
 variable "do_token" {}
 
 provider "digitalocean" {
